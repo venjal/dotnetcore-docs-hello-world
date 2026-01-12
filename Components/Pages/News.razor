@@ -1,0 +1,45 @@
+@page "/news"
+@using System.Xml.Linq
+@inject HttpClient Http
+
+<h3>News</h3>
+
+@if (items == null)
+{
+    <p>Loading news...</p>
+}
+else if (!items.Any())
+{
+    <p>No news available.</p>
+}
+else
+{
+    <ul>
+        @foreach (var it in items)
+        {
+            <li><a href="@it.Link" target="_blank" rel="noopener">@it.Title</a></li>
+        }
+    </ul>
+}
+
+@code {
+    record RssItem(string Title, string Link);
+    List<RssItem>? items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var xml = await Http.GetStringAsync("https://rss.cnn.com/rss/edition.rss");
+            var doc = XDocument.Parse(xml);
+            items = doc.Descendants("item").Take(10).Select(x => new RssItem(
+                (string?)x.Element("title") ?? "",
+                (string?)x.Element("link") ?? "#"
+            )).ToList();
+        }
+        catch
+        {
+            items = new List<RssItem>();
+        }
+    }
+}
