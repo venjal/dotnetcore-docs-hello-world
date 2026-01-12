@@ -6,6 +6,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Register HttpClient for server-side requests (used by News.razor)
+builder.Services.AddHttpClient();
+builder.Services.AddScoped(sp => sp.GetRequiredService<System.Net.Http.IHttpClientFactory>().CreateClient());
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
